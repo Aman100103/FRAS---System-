@@ -1,0 +1,35 @@
+# Environment and secrets
+.env
+.venv/
+venv/
+
+# Python cache/build output
+__pycache__/
+*.py[cod]
+*.pyc.*
+*$py.class
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+
+# Local runtime data
+attendance.csv
+notifications.csv
+students.csv
+students(AutoRecovered).csv
+system.log
+encodings.pkl
+attendance_report*.pdf
+
+# Face images and generated captures contain private biometric data.
+dataset/*
+!dataset/.gitkeep
+attendance_images/*
+!attendance_images/.gitkeep
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

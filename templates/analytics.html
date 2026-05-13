@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0d0a12;
+            --surface: rgba(20, 16, 32, 0.92);
+            --surface2: rgba(28, 23, 48, 0.9);
+            --surface3: rgba(44, 36, 72, 0.78);
+            --border: rgba(255, 255, 255, 0.08);
+            --border2: rgba(255, 255, 255, 0.14);
+            --accent: #c084fc;
+            --gold: #fbbf24;
+            --green: #4ade80;
+            --red: #f87171;
+            --blue: #60a5fa;
+            --text: #f1eeff;
+            --muted: #c8bee6;
+            --radius: 18px;
+            --radius-sm: 12px;
+            --radius-lg: 28px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "DM Sans", sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 14% 8%, rgba(192, 132, 252, 0.2) 0%, transparent 28%),
+                radial-gradient(circle at 86% 18%, rgba(251, 191, 36, 0.14) 0%, transparent 24%),
+                linear-gradient(180deg, #0d0a12 0%, #171124 54%, #24172e 100%);
+        }
+
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            border-bottom: 1px solid var(--border);
+            background: rgba(13, 10, 18, 0.92);
+            backdrop-filter: blur(16px);
+        }
+
+        .nav-inner {
+            width: min(1180px, 92vw);
+            min-height: 72px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .brand {
+            font-family: "Syne", sans-serif;
+            font-weight: 800;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 1.18rem;
+        }
+
+        .brand span {
+            color: var(--gold);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 800;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text);
+            background: var(--surface3);
+        }
+
+        .container {
+            width: min(1180px, 92vw);
+            margin: 28px auto 42px;
+            display: grid;
+            gap: 24px;
+        }
+
+        .page-header,
+        .stat-card,
+        .panel {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+        }
+
+        .page-header {
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, rgba(28, 23, 48, 0.96), rgba(44, 36, 72, 0.8));
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: "Syne", sans-serif;
+            margin: 0;
+        }
+
+        .page-header h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+        }
+
+        .page-header p {
+            color: var(--muted);
+            margin: 10px 0 0;
+            font-size: 1.05rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            padding: 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .stat-card span {
+            color: var(--muted);
+            font-weight: 800;
+        }
+
+        .stat-card strong {
+            font-family: "Syne", sans-serif;
+            font-size: 2rem;
+        }
+
+        .blue {
+            color: var(--blue);
+        }
+
+        .gold {
+            color: var(--gold);
+        }
+
+        .green {
+            color: var(--green);
+        }
+
+        .red {
+            color: var(--red);
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .panel {
+            padding: 20px;
+        }
+
+        .panel.full {
+            grid-column: 1 / -1;
+        }
+
+        .panel h2 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+        }
+
+        .chart-box {
+            height: 320px;
+            position: relative;
+        }
+
+        .tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 13px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--accent);
+            background: var(--surface2);
+            font-family: "Syne", sans-serif;
+        }
+
+        td {
+            color: var(--muted);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-weight: 800;
+            font-size: 0.84rem;
+        }
+
+        .badge.green {
+            color: var(--green);
+            background: rgba(74, 222, 128, 0.12);
+            border: 1px solid rgba(74, 222, 128, 0.25);
+        }
+
+        .badge.gold {
+            color: var(--gold);
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+        }
+
+        .badge.red {
+            color: var(--red);
+            background: rgba(248, 113, 113, 0.12);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+        }
+
+        .success-message,
+        .empty {
+            color: var(--muted);
+            margin: 14px 0 0;
+        }
+
+        .download-report {
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0d0a12;
+            font-family: "Syne", sans-serif;
+            font-weight: 800;
+            border-radius: 14px;
+            padding: 16px;
+            text-decoration: none;
+            font-size: 1.05rem;
+        }
+
+        @media (max-width: 900px) {
+            .stats,
+            .chart-grid,
+            .tables {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-inner {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 14px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <a class="brand" href="/"><span>FRAS</span> Attendance</a>
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+                <a class="active" href="/analytics">Analytics</a>
+                <a href="/#import-section">Import</a>
+                <a href="/download-report">Download Report</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="page-header">
+            <h1>Attendance Analytics</h1>
+            <p>Detailed breakdown and visual insights</p>
+        </header>
+
+        <section class="stats">
+            <article class="stat-card">
+                <span>Total Students</span>
+                <strong class="blue" id="total-students">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>Today Present</span>
+                <strong class="gold" id="today-present">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>Overall %</span>
+                <strong id="overall-pct">0%</strong>
+            </article>
+            <article class="stat-card">
+                <span>At Risk Students</span>
+                <strong class="red" id="at-risk-students">0</strong>
+            </article>
+        </section>
+
+        <section class="chart-grid">
+            <article class="panel">
+                <h2>Attendance % Per Student</h2>
+                <div class="chart-box"><canvas id="attendanceBar"></canvas></div>
+                <p class="empty" id="attendance-empty" hidden>No attendance data available yet.</p>
+            </article>
+            <article class="panel">
+                <h2>Present vs At Risk</h2>
+                <div class="chart-box"><canvas id="riskDoughnut"></canvas></div>
+                <p class="empty" id="risk-empty" hidden>No student data available yet.</p>
+            </article>
+            <article class="panel full">
+                <h2>Daily Attendance Trend</h2>
+                <div class="chart-box"><canvas id="dailyTrend"></canvas></div>
+                <p class="empty" id="trend-empty" hidden>No trend data available yet.</p>
+            </article>
+        </section>
+
+        <section class="tables">
+            <article class="panel">
+                <h2>Top Attenders</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Attendance %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top-attenders-body"></tbody>
+                </table>
+                <p class="empty" id="top-empty" hidden>No students currently meet the 75% attendance threshold.</p>
+            </article>
+
+            <article class="panel">
+                <h2>Students At Risk (Below 75%)</h2>
+                <table id="defaulters-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Attendance %</th>
+                            <th>Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody id="defaulters-body"></tbody>
+                </table>
+                <p class="success-message" id="defaulters-empty" hidden>All students meet the 75% attendance threshold.</p>
+            </article>
+        </section>
+
+        <a class="download-report" href="/download-report">Download PDF Report</a>
+    </main>
+
+    <script>
+        const chartGrid = "rgba(255,255,255,0.06)";
+        const chartText = "#c8bee6";
+        let attendanceChart;
+        let riskChart;
+        let trendChart;
+
+        function pctColor(value) {
+            const pct = Number(value);
+            if (pct >= 75) return "#4ade80";
+            if (pct >= 50) return "#fbbf24";
+            return "#f87171";
+        }
+
+        function rankLabel(index) {
+            if (index === 0) return "1st";
+            if (index === 1) return "2nd";
+            if (index === 2) return "3rd";
+            return String(index + 1);
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+            }[char]));
+        }
+
+        function baseScales() {
+            return {
+                x: {
+                    ticks: { color: chartText },
+                    grid: { color: chartGrid },
+                },
+                y: {
+                    ticks: { color: chartText },
+                    grid: { color: chartGrid },
+                },
+            };
+        }
+
+        function renderAttendanceBar(rows) {
+            document.getElementById("attendance-empty").hidden = rows.length > 0;
+            if (attendanceChart) attendanceChart.destroy();
+            attendanceChart = new Chart(document.getElementById("attendanceBar"), {
+                type: "bar",
+                data: {
+                    labels: rows.map((row) => row.Name),
+                    datasets: [{
+                        label: "Attendance %",
+                        data: rows.map((row) => row.Percentage),
+                        backgroundColor: rows.map((row) => pctColor(row.Percentage)),
+                        borderRadius: 10,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: chartText } } },
+                    scales: {
+                        ...baseScales(),
+                        y: { ...baseScales().y, min: 0, max: 100 },
+                    },
+                },
+            });
+        }
+
+        function renderRiskDoughnut(rows) {
+            document.getElementById("risk-empty").hidden = rows.length > 0;
+            const below = rows.filter((row) => Number(row.Percentage) < 75).length;
+            const above = Math.max(rows.length - below, 0);
+            if (riskChart) riskChart.destroy();
+            riskChart = new Chart(document.getElementById("riskDoughnut"), {
+                type: "doughnut",
+                data: {
+                    labels: ["Above 75%", "Below 75%"],
+                    datasets: [{
+                        data: [above, below],
+                        backgroundColor: ["#4ade80", "#f87171"],
+                        borderColor: "#0d0a12",
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: chartText } } },
+                },
+            });
+        }
+
+        function renderDailyTrend(rows) {
+            document.getElementById("trend-empty").hidden = rows.length > 0;
+            if (trendChart) trendChart.destroy();
+            trendChart = new Chart(document.getElementById("dailyTrend"), {
+                type: "line",
+                data: {
+                    labels: rows.map((row) => row.Date),
+                    datasets: [{
+                        label: "Students Present",
+                        data: rows.map((row) => row.Count),
+                        borderColor: "#c084fc",
+                        backgroundColor: "rgba(192,132,252,0.08)",
+                        fill: true,
+                        tension: 0.35,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: chartText } } },
+                    scales: baseScales(),
+                },
+            });
+        }
+
+        function renderTopAttenders(rows) {
+            const body = document.getElementById("top-attenders-body");
+            document.getElementById("top-empty").hidden = rows.length > 0;
+            body.innerHTML = rows.map((row, index) => `
+                <tr>
+                    <td>${rankLabel(index)}</td>
+                    <td>${escapeHtml(row.Name)}</td>
+                    <td><span class="badge green">${Number(row.Percentage).toFixed(1)}%</span></td>
+                </tr>
+            `).join("");
+        }
+
+        function renderDefaulters(rows) {
+            const body = document.getElementById("defaulters-body");
+            const empty = document.getElementById("defaulters-empty");
+            const table = document.getElementById("defaulters-table");
+            empty.hidden = rows.length > 0;
+            table.hidden = rows.length === 0;
+            body.innerHTML = rows.map((row) => {
+                const percentage = Number(row.Percentage);
+                const critical = percentage < 50;
+                return `
+                    <tr>
+                        <td>${escapeHtml(row.Name)}</td>
+                        <td>${percentage.toFixed(1)}%</td>
+                        <td><span class="badge ${critical ? "red" : "gold"}">${critical ? "Critical" : "At Risk"}</span></td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        async function loadSummary() {
+            const response = await fetch("/api/live-data", { cache: "no-store" });
+            if (!response.ok) return;
+            const data = await response.json();
+            const overall = Number(data.overall_percentage || 0);
+            const overallEl = document.getElementById("overall-pct");
+
+            document.getElementById("total-students").textContent = data.total_students ?? 0;
+            document.getElementById("today-present").textContent = data.today_count ?? 0;
+            document.getElementById("at-risk-students").textContent = data.defaulters_count ?? 0;
+            overallEl.textContent = `${overall.toFixed(1)}%`;
+            overallEl.classList.toggle("green", overall >= 75);
+            overallEl.classList.toggle("red", overall < 75);
+        }
+
+        async function loadAnalytics() {
+            const response = await fetch("/api/analytics-data", { cache: "no-store" });
+            if (!response.ok) return;
+            const data = await response.json();
+            const attendanceRows = data.attendance_per_student || [];
+
+            renderAttendanceBar(attendanceRows);
+            renderRiskDoughnut(attendanceRows);
+            renderDailyTrend(data.daily_trend || []);
+            renderTopAttenders(data.top_attenders || []);
+            renderDefaulters(data.defaulters || []);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadSummary();
+            loadAnalytics();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Flask
+pandas
+opencv-python
+face-recognition
+numpy
+pyttsx3
+SpeechRecognition
+fpdf

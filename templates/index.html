@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0a12;
+            --surface: rgba(20, 16, 32, 0.92);
+            --surface2: rgba(28, 23, 48, 0.9);
+            --surface3: rgba(44, 36, 72, 0.78);
+            --border: rgba(255, 255, 255, 0.08);
+            --border2: rgba(255, 255, 255, 0.14);
+            --accent: #c084fc;
+            --gold: #fbbf24;
+            --green: #4ade80;
+            --red: #f87171;
+            --blue: #60a5fa;
+            --text: #f1eeff;
+            --muted: #c8bee6;
+            --radius: 18px;
+            --radius-sm: 12px;
+            --radius-lg: 28px;
+            --card: var(--surface);
+            --card-soft: var(--surface2);
+            --ink: var(--text);
+            --accent-soft: rgba(192, 132, 252, 0.16);
+            --button: #fbbf24;
+            --button-hover: #f59e0b;
+            --table-head: var(--surface2);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: "DM Sans", sans-serif;
+            background:
+                radial-gradient(circle at 14% 8%, rgba(192, 132, 252, 0.2) 0%, transparent 28%),
+                radial-gradient(circle at 86% 18%, rgba(251, 191, 36, 0.14) 0%, transparent 24%),
+                linear-gradient(180deg, #0d0a12 0%, #171124 54%, #24172e 100%);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            background: rgba(13, 10, 18, 0.92);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+        }
+
+        .nav-inner {
+            width: min(1180px, 92vw);
+            min-height: 72px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .logo {
+            color: var(--gold);
+            font-family: "Syne", sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            font-size: 0.92rem;
+        }
+
+        .nav-links a:hover {
+            background: var(--surface3);
+            color: var(--text);
+        }
+
+        .container {
+            width: min(1180px, 92vw);
+            margin: 98px auto 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero, .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+            backdrop-filter: blur(6px);
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(28, 23, 48, 0.96), rgba(44, 36, 72, 0.8));
+            border-radius: var(--radius-lg);
+            padding: 30px;
+        }
+
+        .hero h1, .card h2, .card h3 {
+            margin-top: 0;
+            font-family: "Syne", sans-serif;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+        }
+
+        .hero p, .section-subtitle, .empty, .muted {
+            color: var(--muted);
+        }
+
+        .hero-meta {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.14);
+        }
+
+        .hero-spotlight {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: minmax(220px, 300px) 1fr;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-image.placeholder, .thumb.placeholder, .student-photo.placeholder {
+            display: grid;
+            place-items: center;
+            color: var(--muted);
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .hero-panel {
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 22px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .hero-label {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+        }
+
+        .hero-name {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .hero-details {
+            display: grid;
+            gap: 8px;
+            color: var(--muted);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin: 24px 0;
+        }
+
+        .card {
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .metric {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--gold);
+            font-family: "Syne", sans-serif;
+        }
+
+        .metric.good {
+            color: var(--green);
+        }
+
+        .metric.risk {
+            color: var(--red);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .button, .toggle-button {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 18px;
+            background: linear-gradient(135deg, var(--button), var(--button-hover));
+            color: #0d0a12;
+            font-size: 0.95rem;
+            font-weight: 800;
+            font-family: "Syne", sans-serif;
+            cursor: pointer;
+            width: fit-content;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .button:hover, .toggle-button:hover {
+            filter: brightness(1.04);
+        }
+
+        .search-input {
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 14px;
+            padding: 13px 14px;
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--ink);
+            width: 100%;
+        }
+
+        .notification-panel {
+            display: grid;
+            gap: 14px;
+        }
+
+        .notification-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--muted);
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+
+        .status-pill.ready {
+            color: #86efac;
+            border-color: rgba(74, 222, 128, 0.36);
+            background: rgba(74, 222, 128, 0.12);
+        }
+
+        .status-pill.warn {
+            color: #fde68a;
+            border-color: rgba(250, 204, 21, 0.32);
+            background: rgba(250, 204, 21, 0.12);
+        }
+
+        .notification-result {
+            color: var(--muted);
+            min-height: 22px;
+            font-weight: 700;
+        }
+
+        .notification-detail-list {
+            margin: 8px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .search-input::placeholder {
+            color: var(--muted);
+        }
+
+        .flash-wrap {
+            margin: 20px 0;
+        }
+
+        .flash {
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .flash.success {
+            background: rgba(132, 165, 157, 0.18);
+            color: #f1fff9;
+            border: 1px solid rgba(132, 165, 157, 0.35);
+        }
+
+        .flash.error {
+            background: rgba(224, 122, 95, 0.16);
+            color: #fff0eb;
+            border: 1px solid rgba(224, 122, 95, 0.36);
+        }
+
+        .activity-feed, .student-grid {
+            margin-top: 16px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .activity-item {
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 56px 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .activity-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .activity-item span {
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            min-width: 720px;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        th {
+            background: var(--table-head);
+            color: var(--accent);
+            font-family: "Syne", sans-serif;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid rgba(255, 210, 157, 0.22);
+        }
+
+        .badge-present {
+            background: rgba(74, 222, 128, 0.16);
+            color: #86efac;
+            border-color: rgba(74, 222, 128, 0.36);
+        }
+
+        .badge-absent {
+            background: rgba(248, 113, 113, 0.16);
+            color: #fca5a5;
+            border-color: rgba(248, 113, 113, 0.36);
+        }
+
+        .badge-late {
+            background: rgba(250, 204, 21, 0.16);
+            color: #fde68a;
+            border-color: rgba(250, 204, 21, 0.36);
+        }
+
+        .percent-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 180px;
+        }
+
+        .percent-track {
+            flex: 1;
+            height: 9px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .percent-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: #4ade80;
+        }
+
+        .percent-fill.risk {
+            background: #f87171;
+        }
+
+        .warning-card {
+            margin-top: 18px;
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(248, 113, 113, 0.14);
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            display: none;
+        }
+
+        .warning-card.show {
+            display: block;
+        }
+
+        .warning-list {
+            margin: 12px 0 0;
+            padding-left: 18px;
+            color: #fecaca;
+        }
+
+        .thumb {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+        }
+
+        .student-grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        .student-card {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            display: grid;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .student-photo {
+            display: block;
+            width: 100%;
+            height: 270px;
+            object-fit: cover;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
+        }
+
+        .student-meta {
+            display: grid;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-inner {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 12px 0;
+            }
+
+            .container {
+                margin-top: 148px;
+            }
+
+            .hero-spotlight, .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 1.55rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-inner">
+            <a class="logo" href="/">🎓 FRAS</a>
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/analytics">Analytics</a>
+                <a href="/download-report">Download Report</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>AI Attendance Dashboard</h1>
+            <p>Live records, quick analytics, and a simple view of attendance activity.</p>
+            <div class="hero-meta">
+                <div class="live-pill">
+                    <span class="live-dot"></span>
+                    <span>Live refresh every 2 seconds</span>
+                </div>
+                <div class="live-pill">
+                    <span>Last sync: <strong id="last-sync">{{ generated_at }}</strong></span>
+                </div>
+            </div>
+            <div class="hero-spotlight" id="hero-spotlight">
+                {% if latest_highlight and latest_highlight.ImageUrl %}
+                <img class="hero-image" id="hero-image" src="{{ latest_highlight.ImageUrl }}" alt="{{ latest_highlight.Name }}">
+                {% else %}
+                <div class="hero-image placeholder" id="hero-image">NO LIVE IMAGE</div>
+                {% endif %}
+                <div class="hero-panel">
+                    <span class="hero-label">Latest Attendance</span>
+                    <div class="hero-name" id="hero-name">{{ latest_highlight.Name if latest_highlight else "Waiting for first record" }}</div>
+                    <div class="hero-details">
+                        <span id="hero-status">Status: {{ latest_highlight.Status if latest_highlight else "No attendance yet" }}</span>
+                        <span id="hero-time">
+                            {% if latest_highlight %}
+                            Captured on {{ latest_highlight.Date }} at {{ latest_highlight.Time }}
+                            {% else %}
+                            Start recognition to stream the latest live capture here.
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="card">
+                <h3>Total Records</h3>
+                <div class="metric" id="total-records">{{ total_records }}</div>
+            </div>
+            <div class="card">
+                <h3>Total Students</h3>
+                <div class="metric" id="total-students">{{ total_students }}</div>
+            </div>
+            <div class="card">
+                <h3>Today's Attendance</h3>
+                <div class="metric" id="today-count">{{ today_count }}</div>
+            </div>
+            <div class="card" id="overall-card">
+                <h3>Overall Attendance %</h3>
+                <div class="metric" id="overall-percentage">{{ overall_percentage }}</div>
+            </div>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <section class="flash-wrap">
+            {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        </section>
+        {% endif %}
+        {% endwith %}
+
+        <section class="card" style="margin-top: 24px;">
+            <div class="section-head">
+                <div>
+                    <h2>Automated Notifications</h2>
+                    <span class="section-subtitle">Alerts students and parents when attendance is below the required threshold</span>
+                </div>
+                <button class="button" type="button" id="send-notifications">Send Alerts Now</button>
+            </div>
+            <div class="notification-panel">
+                <div class="notification-meta">
+                    <span class="status-pill" id="notification-threshold">Threshold: {{ notification_status.threshold }}%</span>
+                    <span class="status-pill" id="notification-alerts">At risk: {{ notification_status.alerts_found }}</span>
+                    <span class="status-pill" id="notification-email">Email: {{ "Ready" if notification_status.email_configured else "Needs setup" }}</span>
+                    <span class="status-pill" id="notification-sms">SMS: {{ "Ready" if notification_status.sms_configured else "Needs setup" }}</span>
+                    <span class="status-pill" id="notification-sent">Sent today: {{ notification_status.sent_today }}</span>
+                </div>
+                <p class="muted">
+                    Add contacts in <strong>students.csv</strong> using StudentEmail, ParentEmail, StudentPhone, and ParentPhone.
+                    Configure SMTP and Twilio environment variables to send real alerts.
+                </p>
+                <div class="notification-result" id="notification-result"></div>
+            </div>
+        </section>
+
+        <section class="card-grid" style="margin-top: 24px;">
+            <section class="card">
+                <div class="section-head">
+                    <h2>Recent Activity</h2>
+                    <span class="section-subtitle">Newest detections appear here first</span>
+                </div>
+                <div class="activity-feed" id="recent-activity"></div>
+            </section>
+
+            <section class="card">
+                <div class="section-head">
+                    <h2>Summary Analytics</h2>
+                    <span class="section-subtitle">Attendance totals by student</span>
+                </div>
+                <div class="table-wrap">
+                    <table id="summary-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Attendance Count</th>
+                                <th>Attendance %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-table-body"></tbody>
+                    </table>
+                </div>
+                <p class="empty" id="summary-empty" style="display: none;">Summary will appear after attendance data is available.</p>
+                <div class="warning-card" id="defaulters-warning">
+                    <strong>⚠️ Students Below 75% Attendance</strong>
+                    <ul class="warning-list" id="defaulters-list"></ul>
+                </div>
+            </section>
+        </section>
+
+        <section class="card">
+            <div class="section-head">
+                <div>
+                    <h2>Attendance Log</h2>
+                    <span class="section-subtitle">Updates automatically while recognition is running</span>
+                </div>
+                <input class="search-input" id="attendance-search" type="search" placeholder="Search by name..." style="max-width: 320px;">
+            </div>
+            <div class="table-wrap">
+                <table id="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Roll No</th>
+                            <th>Class</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-table-body"></tbody>
+                </table>
+            </div>
+            <p class="empty" id="attendance-empty" style="display: none;">No attendance has been marked yet.</p>
+        </section>
+
+        <section class="card" style="margin-top: 24px;">
+            <div class="section-head">
+                <h2>Student Directory</h2>
+                <span class="section-subtitle">Student data from students.csv and dataset images</span>
+            </div>
+            <div class="student-grid" id="student-grid"></div>
+        </section>
+    </main>
+
+    <script>
+        const liveDataUrl = "{{ url_for('live_data') }}";
+        const analyticsDataUrl = "{{ url_for('analytics_data') }}";
+        const sendNotificationsUrl = "{{ url_for('send_notifications') }}";
+        const notificationStatusUrl = "{{ url_for('notification_status') }}";
+        let latestAnalytics = {
+            attendance_percentage_per_student: [],
+            defaulters: [],
+        };
+        let alarmContext = null;
+        let alarmTimer = null;
+
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+            }[character]));
+        }
+
+        function statusBadgeClass(status) {
+            const normalized = String(status || "").toLowerCase();
+            if (normalized === "present") return "badge-present";
+            if (normalized === "absent") return "badge-absent";
+            if (normalized === "late") return "badge-late";
+            return "";
+        }
+
+        function setMetric(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+
+        function updateOverallColor(value) {
+            const metric = document.getElementById("overall-percentage");
+            if (!metric) return;
+            metric.classList.toggle("good", Number(value) >= 75);
+            metric.classList.toggle("risk", Number(value) < 75);
+        }
+
+        function updateHeroHighlight(record) {
+            const heroImage = document.getElementById("hero-image");
+            const heroName = document.getElementById("hero-name");
+            const heroStatus = document.getElementById("hero-status");
+            const heroTime = document.getElementById("hero-time");
+            if (!heroImage || !heroName || !heroStatus || !heroTime) return;
+
+            if (!record) {
+                heroName.textContent = "Waiting for first record";
+                heroStatus.textContent = "Status: No attendance yet";
+                heroTime.textContent = "Start recognition to stream the latest live capture here.";
+                heroImage.outerHTML = '<div class="hero-image placeholder" id="hero-image">NO LIVE IMAGE</div>';
+                return;
+            }
+
+            heroName.textContent = record.Name;
+            heroStatus.textContent = `Status: ${record.Status}`;
+            heroTime.textContent = `Captured on ${record.Date} at ${record.Time}`;
+            heroImage.outerHTML = record.ImageUrl
+                ? `<img class="hero-image" id="hero-image" src="${escapeHtml(record.ImageUrl)}" alt="${escapeHtml(record.Name)}">`
+                : '<div class="hero-image placeholder" id="hero-image">NO LIVE IMAGE</div>';
+        }
+
+        function updateRecentActivity(records) {
+            const container = document.getElementById("recent-activity");
+            if (!container) return;
+
+            if (!records.length) {
+                container.innerHTML = '<p class="empty">No recent attendance activity yet.</p>';
+                return;
+            }
+
+            container.innerHTML = records.map((row) => `
+                <div class="activity-item">
+                    ${row.ImageUrl
+                        ? `<img class="thumb" src="${escapeHtml(row.ImageUrl)}" alt="${escapeHtml(row.Name)}">`
+                        : '<div class="thumb placeholder">NO IMG</div>'}
+                    <div>
+                        <strong>${escapeHtml(row.Name)} marked ${escapeHtml(row.Status)}</strong>
+                        <span>${escapeHtml(row.Date)} at ${escapeHtml(row.Time)}</span>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function updateAttendanceTable(records) {
+            const table = document.getElementById("attendance-table");
+            const tbody = document.getElementById("attendance-table-body");
+            const emptyState = document.getElementById("attendance-empty");
+            if (!tbody || !table || !emptyState) return;
+
+            if (!records.length) {
+                tbody.innerHTML = "";
+                table.style.display = "none";
+                emptyState.style.display = "block";
+                return;
+            }
+
+            table.style.display = "table";
+            emptyState.style.display = "none";
+            tbody.innerHTML = records.map((row) => `
+                <tr data-name="${escapeHtml(row.Name).toLowerCase()}">
+                    <td>${row.ImageUrl
+                        ? `<img class="thumb" src="${escapeHtml(row.ImageUrl)}" alt="${escapeHtml(row.Name)}">`
+                        : '<div class="thumb placeholder">NO IMG</div>'}</td>
+                    <td>${escapeHtml(row.Name)}</td>
+                    <td>${escapeHtml(row.RollNumber || "Not set")}</td>
+                    <td>${escapeHtml(row.Class || "Not set")}</td>
+                    <td>${escapeHtml(row.Date)}</td>
+                    <td>${escapeHtml(row.Time)}</td>
+                    <td><span class="badge ${statusBadgeClass(row.Status)}">${escapeHtml(row.Status)}</span></td>
+                </tr>
+            `).join("");
+            filterAttendanceRows();
+        }
+
+        function updateSummaryTable(summary) {
+            const table = document.getElementById("summary-table");
+            const tbody = document.getElementById("summary-table-body");
+            const emptyState = document.getElementById("summary-empty");
+            const percentageByName = new Map(
+                latestAnalytics.attendance_percentage_per_student.map((row) => [row.Name, row.Percentage])
+            );
+            if (!table || !tbody || !emptyState) return;
+
+            if (!summary.length) {
+                tbody.innerHTML = "";
+                table.style.display = "none";
+                emptyState.style.display = "block";
+                return;
+            }
+
+            table.style.display = "table";
+            emptyState.style.display = "none";
+            tbody.innerHTML = summary.map((item) => {
+                const percentage = Number(percentageByName.get(item.Name) || 0);
+                const riskClass = percentage < 75 ? "risk" : "";
+                return `
+                    <tr>
+                        <td>${escapeHtml(item.Name)}</td>
+                        <td>${escapeHtml(item.Count)}</td>
+                        <td>
+                            <div class="percent-cell">
+                                <div class="percent-track"><div class="percent-fill ${riskClass}" style="width: ${Math.min(percentage, 100)}%;"></div></div>
+                                <strong>${percentage.toFixed(1)}%</strong>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function updateDefaultersWarning() {
+            const warning = document.getElementById("defaulters-warning");
+            const list = document.getElementById("defaulters-list");
+            if (!warning || !list) return;
+
+            if (!latestAnalytics.defaulters.length) {
+                warning.classList.remove("show");
+                list.innerHTML = "";
+                return;
+            }
+
+            warning.classList.add("show");
+            list.innerHTML = latestAnalytics.defaulters.map((row) => (
+                `<li>${escapeHtml(row.Name)} - ${Number(row.Percentage).toFixed(1)}%</li>`
+            )).join("");
+        }
+
+        function setStatusPill(id, text, ready) {
+            const element = document.getElementById(id);
+            if (!element) return;
+            element.textContent = text;
+            element.classList.toggle("ready", Boolean(ready));
+            element.classList.toggle("warn", !ready);
+        }
+
+        function updateNotificationStatus(status) {
+            if (!status) return;
+            setStatusPill("notification-threshold", `Threshold: ${Number(status.threshold).toFixed(1)}%`, true);
+            setStatusPill("notification-alerts", `At risk: ${status.alerts_found}`, Number(status.alerts_found) === 0);
+            setStatusPill("notification-email", `Email: ${status.email_configured ? "Ready" : "Needs setup"}`, status.email_configured || status.dry_run);
+            setStatusPill("notification-sms", `SMS: ${status.sms_configured ? "Ready" : "Needs setup"}`, status.sms_configured || status.dry_run);
+            const pending = Number(status.pending_acknowledgements || 0);
+            setStatusPill("notification-sent", pending > 0 ? `Waiting OK: ${pending}` : `Sent today: ${status.sent_today}`, pending === 0);
+            if (pending === 0) {
+                stopNotificationAlarm();
+            }
+        }
+
+        function playAlarmBeep() {
+            try {
+                alarmContext = alarmContext || new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = alarmContext.createOscillator();
+                const gain = alarmContext.createGain();
+                oscillator.type = "sine";
+                oscillator.frequency.value = 880;
+                gain.gain.setValueAtTime(0.0001, alarmContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.18, alarmContext.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, alarmContext.currentTime + 0.42);
+                oscillator.connect(gain);
+                gain.connect(alarmContext.destination);
+                oscillator.start();
+                oscillator.stop(alarmContext.currentTime + 0.45);
+            } catch (error) {
+                console.error("Unable to play notification alarm.", error);
+            }
+        }
+
+        function startNotificationAlarm() {
+            if (alarmTimer) return;
+            playAlarmBeep();
+            alarmTimer = window.setInterval(playAlarmBeep, 1800);
+        }
+
+        function stopNotificationAlarm() {
+            if (!alarmTimer) return;
+            window.clearInterval(alarmTimer);
+            alarmTimer = null;
+        }
+
+        function formatNotificationDetail(detail) {
+            const name = escapeHtml(detail.Name || "Unknown");
+            const channel = escapeHtml(detail.Channel || "none");
+            const recipient = detail.Recipient ? ` to ${escapeHtml(detail.Recipient)}` : "";
+            const reason = detail.Reason ? ` (${escapeHtml(detail.Reason)})` : "";
+            if (!detail.Recipient && detail.Status === "missing-contact") {
+                return `${name}: missing contact details`;
+            }
+            return `${name}: ${escapeHtml(detail.Status || "unknown")} via ${channel}${recipient}${reason}`;
+        }
+
+        async function refreshNotificationStatus() {
+            try {
+                const response = await fetch(notificationStatusUrl, { cache: "no-store" });
+                if (!response.ok) return;
+                updateNotificationStatus(await response.json());
+            } catch (error) {
+                console.error("Notification status refresh failed.", error);
+            }
+        }
+
+        async function sendNotificationsNow() {
+            const button = document.getElementById("send-notifications");
+            const result = document.getElementById("notification-result");
+            if (button) button.disabled = true;
+            if (result) result.textContent = "Checking attendance and sending alerts...";
+
+            try {
+                const response = await fetch(sendNotificationsUrl, { method: "POST", cache: "no-store" });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Unable to send notifications.");
+                }
+
+                if (result) {
+                    const details = Array.isArray(data.details) && data.details.length
+                        ? `<ul class="notification-detail-list">${data.details.slice(0, 8).map((detail) => `<li>${formatNotificationDetail(detail)}</li>`).join("")}</ul>`
+                        : "";
+                    const actions = Number(data.sent || 0) + Number(data.skipped || 0) + Number(data.failed || 0);
+                    const acknowledgementEnabled = Array.isArray(data.details) && data.details.some((detail) => detail.AcknowledgementEnabled);
+                    const acknowledgementNote = acknowledgementEnabled
+                        ? " Alarm will stop after the receiver presses OK."
+                        : data.sent > 0
+                            ? " Add PUBLIC_BASE_URL to include OK links and use receiver acknowledgement."
+                        : "";
+                    result.innerHTML = `Found ${data.alerts_found} at-risk student(s). Checked ${actions} delivery action(s): sent ${data.sent}, skipped ${data.skipped}, failed ${data.failed}.${acknowledgementNote}${details}`;
+                }
+                if (Array.isArray(data.details) && data.details.some((detail) => detail.AcknowledgementEnabled && ["sent", "dry-run"].includes(detail.Status))) {
+                    startNotificationAlarm();
+                }
+                await refreshNotificationStatus();
+            } catch (error) {
+                if (result) result.textContent = error.message;
+            } finally {
+                if (button) button.disabled = false;
+            }
+        }
+
+        function updateStudentGrid(students) {
+            const grid = document.getElementById("student-grid");
+            if (!grid) return;
+
+            if (!students.length) {
+                grid.innerHTML = '<p class="empty">Student cards will appear after attendance data is available.</p>';
+                return;
+            }
+
+            grid.innerHTML = students.map((student) => `
+                <article class="student-card">
+                    ${student.ImageUrl
+                        ? `<img class="student-photo" src="${escapeHtml(student.ImageUrl)}" alt="${escapeHtml(student.Name)}">`
+                        : '<div class="student-photo placeholder">NO IMAGE</div>'}
+                    <div>
+                        <h3>${escapeHtml(student.Name)}</h3>
+                    </div>
+                    <div class="student-meta">
+                        <span>Roll number: ${escapeHtml(student.RollNumber || "Not set")}</span>
+                        <span>Class: ${escapeHtml(student.Class || "Not set")}</span>
+                        <span>Total attendance: ${escapeHtml(student.Count)}</span>
+                        <span>Latest status: ${escapeHtml(student.Status)}</span>
+                        <span>Photo: ${student.PhotoPath ? "Available" : "Missing"}</span>
+                        <span>Last seen: ${student.LastDate ? `${escapeHtml(student.LastDate)} at ${escapeHtml(student.LastTime)}` : "Not marked yet"}</span>
+                    </div>
+                </article>
+            `).join("");
+        }
+
+        function filterAttendanceRows() {
+            const search = document.getElementById("attendance-search");
+            const rows = document.querySelectorAll("#attendance-table-body tr");
+            const query = String(search?.value || "").trim().toLowerCase();
+            rows.forEach((row) => {
+                row.style.display = row.dataset.name.includes(query) ? "" : "none";
+            });
+        }
+
+        async function refreshAnalytics() {
+            try {
+                const response = await fetch(analyticsDataUrl, { cache: "no-store" });
+                if (!response.ok) return;
+                latestAnalytics = await response.json();
+                updateDefaultersWarning();
+            } catch (error) {
+                console.error("Analytics refresh failed.", error);
+            }
+        }
+
+        async function refreshDashboard() {
+            try {
+                await refreshAnalytics();
+                const response = await fetch(liveDataUrl, { cache: "no-store" });
+                if (!response.ok) return;
+
+                const data = await response.json();
+                setMetric("total-records", data.total_records);
+                setMetric("total-students", data.total_students);
+                setMetric("today-count", data.today_count);
+                setMetric("overall-percentage", Number(data.overall_percentage).toFixed(1));
+                updateOverallColor(data.overall_percentage);
+
+                const lastSync = document.getElementById("last-sync");
+                if (lastSync) {
+                    lastSync.textContent = data.generated_at;
+                }
+
+                updateHeroHighlight(data.latest_highlight || null);
+                updateRecentActivity(data.recent_records || []);
+                updateAttendanceTable(data.records || []);
+                updateSummaryTable(data.summary || []);
+                updateStudentGrid(data.student_profiles || []);
+                updateNotificationStatus(data.notification_status);
+            } catch (error) {
+                console.error("Live dashboard refresh failed.", error);
+            }
+        }
+
+        document.getElementById("send-notifications")?.addEventListener("click", sendNotificationsNow);
+        document.getElementById("attendance-search")?.addEventListener("input", filterAttendanceRows);
+
+        refreshDashboard();
+        window.setInterval(refreshDashboard, 2000);
+    </script>
+</body>
+</html>
